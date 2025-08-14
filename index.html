@@ -1,0 +1,1471 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="system">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <title>Olivia’s Pocket Cookbook — Stage 5 (Folders Fix)</title>
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <!-- Cute title font -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Pacifico&display=swap" rel="stylesheet">
+  <style>
+    /* GLOBAL */
+    * { box-sizing: border-box; }
+    :root{
+      --bg: #f7f7fb;
+      --card: #ffffff;
+      --text: #111316;
+      --muted: #6a6f76;
+      --accent: #2f7cf6;
+      --danger: #e24545;
+      --chip: #eef2ff;
+      --chipText: #243b6b;
+      --shadow: 0 6px 24px rgba(0,0,0,.06);
+      --radius: 14px;
+      --overlay: rgba(0,0,0,.5);
+      --input: rgba(0,0,0,.06);
+      --border: rgba(0,0,0,.1);
+      --today: #ffefc2;
+    }
+    @media (prefers-color-scheme: dark) {
+      :root{
+        --bg: #0f1115;
+        --card: #171a21;
+        --text: #edf1f7;
+        --muted: #9aa3af;
+        --accent: #6da7ff;
+        --danger: #ff6868;
+        --chip: #243b6b;
+        --chipText: #e6eeff;
+        --shadow: 0 8px 28px rgba(0,0,0,.55);
+        --overlay: rgba(0,0,0,.6);
+        --input: rgba(255,255,255,.06);
+        --border: rgba(255,255,255,.12);
+        --today: #2b2414;
+      }
+    }
+    [data-theme="light"]{
+      --bg: #f7f7fb; --card: #ffffff; --text: #111316; --muted: #6a6f76; --accent: #2f7cf6; --danger: #e24545;
+      --chip: #eef2ff; --chipText: #243b6b; --shadow: 0 6px 24px rgba(0,0,0,.06); --overlay: rgba(0,0,0,.5);
+      --input: rgba(0,0,0,.06); --border: rgba(0,0,0,.1); --today: #ffefc2;
+    }
+    [data-theme="dark"]{
+      --bg: #0f1115; --card: #171a21; --text: #edf1f7; --muted: #9aa3af; --accent: #6da7ff; --danger: #ff6868;
+      --chip: #243b6b; --chipText: #e6eeff; --shadow: 0 8px 28px rgba(0,0,0,.55); --overlay: rgba(255,255,255,.06);
+      --input: rgba(255,255,255,.06); --border: rgba(255,255,255,.12); --today: #2b2414;
+    }
+
+    /* Base */
+    html,body{ margin:0; padding:0; height:100%; background:var(--bg); color:var(--text);
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, "Apple Color Emoji","Segoe UI Emoji";
+      -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale;
+    }
+    a.link{color:var(--accent);text-decoration:none;font-weight:700;}
+    .subtle{color:var(--muted);font-size:12px;}
+    .spacer{height:8px;}
+
+    /* Top bar */
+    .appbar{ position: sticky; top: env(safe-area-inset-top); z-index: 8;
+      display:grid; grid-template-columns: 40px 1fr 40px; align-items:center; gap:8px;
+      padding: calc(10px + env(safe-area-inset-top)) 10px 10px 10px;
+      background: linear-gradient(180deg, rgba(0,0,0,0.04), rgba(0,0,0,0)) , var(--bg);
+      backdrop-filter: saturate(180%) blur(12px);
+    }
+    .iconbtn{ appearance:none;border:0;background:transparent;padding:6px;border-radius:10px; }
+    .iconbtn:active{opacity:.6;}
+    .title{ text-align:center; font-size: 22px; font-weight: 700; letter-spacing:.3px;
+      font-family: 'Pacifico', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, "Apple Color Emoji","Segoe UI Emoji";
+    }
+    .searchWrap{ grid-column: 1 / 4; display:flex; justify-content:center; padding: 4px 0 0; }
+    .search{
+      width: min(680px, 92vw); display:flex; align-items:center; gap:8px;
+      background: var(--card); box-shadow: var(--shadow);
+      border:1px solid var(--border); border-radius: 999px; padding: 8px 12px;
+    }
+    .search input{ flex:1; border:0; outline:none; background:transparent; color:var(--text); font-size: 16px; }
+    .search .count{ font-size:12px; color:var(--muted); }
+
+    /* Views */
+    .view{ display:none; padding: 8px 16px 120px 16px; }
+    .view.active{ display:block; }
+
+    /* Tab bar (thinner) */
+    .tabbar{
+      position: fixed; inset:auto 0 0 0; z-index: 9; background: var(--card); border-top:1px solid var(--border);
+      display:flex; justify-content: space-around; align-items: center;
+      padding: 6px calc(8px + env(safe-area-inset-bottom));
+      box-shadow: 0 -8px 20px rgba(0,0,0,.08);
+    }
+    .tabbar button{
+      appearance:none;border:0;background:transparent; display:flex; flex-direction:column; align-items:center; gap:4px;
+      padding:6px 10px; border-radius: 12px; color: var(--muted); font-size:12px; font-weight:700;
+    }
+    .tabbar button.active{ color: var(--text); background: rgba(0,0,0,.04); }
+    @media (prefers-color-scheme: dark){
+      .tabbar button.active{ background: rgba(255,255,255,.06); }
+    }
+
+    /* Recipe list */
+    .empty{ text-align:center; color:var(--muted); padding:60px 16px; }
+    ul.list{list-style:none;margin:8px 0 0 0;padding:0;display:grid;gap:12px;}
+    .row{ position:relative; background:var(--card); border-radius: var(--radius); box-shadow: var(--shadow);
+      overflow:hidden; touch-action: pan-y; }
+    .row .content{ display:flex;align-items:center;gap:12px; padding:10px; transition: transform .2s ease; will-change: transform; }
+    .thumb{ width:64px;height:64px;border-radius:12px;object-fit:cover;background:#ddd;flex:0 0 64px; }
+    .name{font-weight:800;font-size:16px;}
+    .meta{color:var(--muted);font-size:12px;margin-top:2px;}
+    .tags{margin-top:6px;}
+    .tag{display:inline-block;background:var(--chip);color:var(--chipText);padding:6px 10px;border-radius:999px;font-size:12px;margin:0 6px 6px 0;}
+
+    .delete-btn{ position:absolute;inset:0 0 0 auto;width:92px;border:0; background:var(--danger);color:white;font-weight:700;
+      opacity:0; transform: translateX(92px); pointer-events:none; transition: opacity .15s ease, transform .15s ease; }
+    .row.show-delete .content{ transform: translateX(-92px); }
+    .row.show-delete .delete-btn{ opacity:1; transform: translateX(0); pointer-events:auto; }
+
+    /* Buttons */
+    .btn{ appearance:none;border:0;border-radius:12px;padding:12px 14px;font-weight:800; }
+    .btn.primary{ background:var(--accent); color:white; }
+    .btn.ghost{ background:transparent; color:var(--text); border:1px solid var(--border); }
+    .btn.danger{ background:var(--danger); color:white; }
+    .btn[disabled]{ opacity:.6; }
+
+    /* Floating add (raised + higher z-index) */
+    .fab{
+      position: fixed; right:16px; bottom: calc(100px + env(safe-area-inset-bottom));
+      background:var(--accent); color:white; border:0; padding:16px 18px;border-radius:24px; box-shadow: var(--shadow);
+      font-weight:800; z-index: 12;
+    }
+    .fab.hidden{ display:none; }
+    .fab:active{ transform: translateY(1px); }
+
+    /* Panels */
+    .panel{ background:var(--card); border-radius:20px; box-shadow: var(--shadow); padding:16px; margin:8px 0 0 0; }
+    .panel h2{ margin:6px 0 10px 0; font-size:18px; }
+    .section{ margin-top:14px; }
+    .section h3{ margin:0 0 8px 0; }
+
+    /* Detail */
+    .hero{ width:100%; aspect-ratio: 16/10; object-fit:cover; border-radius:16px; background:#ddd; box-shadow: var(--shadow); }
+    .pill{ display:inline-block;background:rgba(0,0,0,.04);padding:8px 10px;border-radius:999px;margin:0 8px 8px 0; border:1px dashed var(--border); }
+
+    /* Chips (editor) */
+    .chips{ display:flex; gap:8px; flex-wrap: wrap; align-items: center; background:var(--card); border:1px dashed var(--border);
+      border-radius:12px; padding:8px; }
+    .chip{ display:inline-flex; align-items:center; gap:6px; background:var(--chip); color:var(--chipText);
+      border-radius:999px; padding:6px 10px; font-size:14px; }
+    .chip button{ border:0; background:transparent; color:inherit; font-weight:800; }
+    .chips input{ border:0; outline:none; min-width:120px; flex:1; font-size:16px; background:transparent; color:var(--text); }
+
+    /* Steps builder */
+    .stepRow{ display:flex; gap:8px; }
+    .stepRow input{ flex:1; border:1px solid var(--border); border-radius:12px; padding:10px 12px; background:transparent; color:var(--text); }
+    .stepsList{ list-style: decimal; padding-left: 20px; }
+    .stepsList li{ margin:6px 0; display:flex; gap:8px; align-items:flex-start; }
+    .stepText{ flex:1; }
+    .smIcon{ border:0; background:transparent; padding:5px; border-radius:8px; }
+    .smIcon:active{ opacity:.6; }
+
+    /* Sheets */
+    .sheet{ position: fixed; inset:auto 0 0 0; transform: translateY(110%); transition: transform .2s ease; background: var(--card);
+      border-top-left-radius: 16px; border-top-right-radius: 16px; box-shadow: 0 -10px 30px rgba(0,0,0,.25);
+      padding: 10px 16px calc(16px + env(safe-area-inset-bottom)); z-index: 50; }
+    .sheet.open{ transform: translateY(0); }
+    .grab{ width:48px;height:5px;border-radius:8px;background:rgba(127,127,127,.35);margin:8px auto 12px; }
+
+    /* Modal confirm */
+    .modal-backdrop{ position: fixed; inset:0; background: var(--overlay); z-index: 60; display:none; align-items:flex-end; justify-content:center; }
+    .modal-backdrop.open{ display:flex; }
+    .dialog{ width: 100%; max-width: 540px; background: var(--card); border-top-left-radius: 16px; border-top-right-radius: 16px;
+      padding: 16px; box-shadow: 0 -10px 30px rgba(0,0,0,.35); }
+    .dialog h3{margin:0 0 8px 0;}
+    .dialog p{margin:0 0 12px 0; color:var(--muted);}
+    .dialog .rowbtns{display:flex; gap:10px; justify-content:flex-end;}
+
+    /* Calendar View */
+    .calHeader{ display:grid; grid-template-columns: auto 1fr auto; gap:8px; align-items: center; padding:8px 0; }
+    .calTitle{ font-weight:800; font-size: clamp(16px, 4.5vw, 22px); text-align:center; line-height: 1.1; }
+    .calNav{ display:flex; gap:8px; flex-wrap: wrap; }
+    .nowline{ font-size: clamp(11px, 3.4vw, 13px); color:var(--muted); text-align:right; }
+
+    .dow{
+      display:grid; grid-template-columns: repeat(7, minmax(0,1fr)); gap:6px; margin-top:6px;
+      color:var(--muted); font-weight:700; font-size: clamp(10px, 2.6vw, 12px);
+    }
+    .grid{
+      display:grid; grid-template-columns: repeat(7, minmax(0,1fr)); gap:6px; margin-top:6px;
+      grid-auto-rows: minmax(104px, auto);
+    }
+    .cell{
+      background: var(--card); border:1px solid var(--border); border-radius: 12px; padding:8px; box-shadow: var(--shadow);
+      display:flex; flex-direction:column; gap:6px; overflow:hidden;
+    }
+    .cell .daynum{ font-weight:800; font-size: clamp(10px, 2.4vw, 12px); color: var(--muted); align-self:flex-start; }
+    .cell.today{ outline: 2px solid var(--accent);
+      background: linear-gradient(180deg, rgba(127,170,255,.12), rgba(0,0,0,0)), var(--card); }
+    .ev{ display:block; max-width:100%; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;
+      background:var(--chip); color:var(--chipText); border-radius:999px; padding:4px 8px; font-size: clamp(10px, 2.6vw, 12px); }
+    .more{ font-size: clamp(10px, 2.6vw, 12px); color:var(--muted); }
+
+    /* Day sheet items */
+    .dayList{ list-style:none; padding:0; margin:0; display:grid; gap:8px; }
+    .dayItem{ display:flex; align-items:center; gap:10px; background:var(--card); border:1px solid var(--border); border-radius:12px; padding:10px; }
+    .dayItem button{ margin-left:auto; }
+
+    /* Folders */
+    .folderGrid{ list-style:none; padding:0; margin:0; display:grid; gap:10px; grid-template-columns: repeat( auto-fill, minmax(180px, 1fr) ); }
+    .folderCard{ background:var(--card); border:1px solid var(--border); border-radius:16px; box-shadow:var(--shadow); padding:14px; display:flex; flex-direction:column; gap:8px; }
+    .folderCard h3{ margin:0; font-size:16px; }
+    .folderMeta{ color:var(--muted); font-size:12px; }
+    .folderActions{ display:flex; gap:8px; }
+    .folderActions button{ flex:1; }
+
+    .selectList{ list-style:none; padding:0; margin:0; display:grid; gap:8px; }
+    .selectRow{ display:flex; align-items:center; gap:10px; background:var(--card); border:1px solid var(--border); border-radius:12px; padding:10px; }
+    .selectRow img{ width:48px; height:48px; border-radius:10px; object-fit:cover; background:#ddd; }
+    .selectRow label{ display:flex; align-items:center; gap:10px; flex:1; }
+
+    .input{ width:100%; border:1px solid var(--border); border-radius:12px; padding:12px; background:transparent; color:var(--text); }
+  </style>
+</head>
+<body>
+  <header class="appbar">
+    <button class="iconbtn" id="backBtn" title="Back" style="visibility:hidden" aria-label="Back">
+      <svg width="26" height="26" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M15 6l-6 6 6 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    </button>
+
+    <div class="title" id="appTitle">Olivia’s Pocket Cookbook</div>
+
+    <!-- Open-book icon opens Settings -->
+    <button class="iconbtn" id="settingsBtn" title="Settings" aria-label="Settings">
+      <svg width="26" height="26" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+        <path d="M3 5.5C3 4.12 4.12 3 5.5 3H11v16H5.5A2.5 2.5 0 013 16.5v-11z" stroke="currentColor" stroke-width="1.7" fill="none"/>
+        <path d="M21 5.5C21 4.12 19.88 3 18.5 3H13v16h5.5a2.5 2.5 0 002.5-2.5v-11z" stroke="currentColor" stroke-width="1.7" fill="none"/>
+        <path d="M11 6H7.5A2.5 2.5 0 005 8.5v0" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/>
+        <path d="M13 6h3.5A2.5 2.5 0 0119 8.5v0" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/>
+      </svg>
+    </button>
+
+    <!-- Centered Search (visible on List view only) -->
+    <div class="searchWrap" id="searchWrap">
+      <div class="search">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M21 21l-4.2-4.2" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><circle cx="10" cy="10" r="6" stroke="currentColor" stroke-width="2"/></svg>
+        <input id="searchInput" type="search" placeholder="Search recipes or keywords…" />
+        <div class="count" id="resultCount"></div>
+      </div>
+    </div>
+  </header>
+
+  <!-- Views -->
+  <main id="listView" class="view active" aria-live="polite">
+    <div id="listContainer"></div>
+  </main>
+
+  <main id="detailView" class="view">
+    <div class="panel">
+      <img id="detailImage" class="hero" alt="Recipe image"/>
+      <h2 id="detailName" style="margin-top:12px;"></h2>
+      <div class="subtle" id="detailMeta"></div>
+
+      <div class="section">
+        <h3>Ingredients</h3>
+        <div id="detailIngredients"></div>
+      </div>
+
+      <div class="section">
+        <h3>Cookware</h3>
+        <div id="detailCookware"></div>
+      </div>
+
+      <div class="section">
+        <h3>Steps</h3>
+        <ol id="detailSteps" style="padding-left:18px;margin:0;"></ol>
+      </div>
+
+      <div class="section">
+        <h3>Keywords</h3>
+        <div id="detailKeywords" class="tags"></div>
+      </div>
+
+      <div class="section">
+        <h3>Dates</h3>
+        <div id="detailDates" class="tags"></div>
+        <div class="row-inline" style="margin-top:8px;">
+          <input id="detailDateInput" type="date" class="input">
+          <button class="btn ghost" id="detailAddDate">Add date</button>
+        </div>
+        <div class="subtle">Assign another date to schedule this recipe.</div>
+      </div>
+
+      <div class="spacer"></div>
+      <div style="display:flex;gap:10px;justify-content:flex-end">
+        <button class="btn ghost" id="editBtn">Edit</button>
+      </div>
+    </div>
+  </main>
+
+  <main id="formView" class="view">
+    <form id="recipeForm" class="panel">
+      <h2 id="formTitle">Add Recipe</h2>
+      <input type="hidden" id="editingId" value="">
+      <div class="row-inline">
+        <div style="flex:1">
+          <label for="name">Name</label>
+          <input id="name" name="name" type="text" placeholder="e.g., Caprese Salad" class="input" required />
+        </div>
+      </div>
+
+      <div class="section">
+        <h3>Photo</h3>
+        <div class="row-inline">
+          <img id="imagePreview" class="preview" alt="Image preview" style="max-width:220px;"/>
+          <div style="flex:1">
+            <input id="image" name="image" type="file" accept="image/*" />
+            <div class="subtle">Photos are compressed & stored efficiently to save space.</div>
+            <div style="margin-top:6px"><label><input type="checkbox" id="removeImage"> Remove current image</label></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="section">
+        <h3>Ingredients</h3>
+        <div id="chipsIngredients" class="chips" aria-label="Ingredients chip input"></div>
+        <div class="subtle">Type an item and hit Return to add.</div>
+      </div>
+
+      <div class="section">
+        <h3>Cookware</h3>
+        <div id="chipsCookware" class="chips" aria-label="Cookware chip input"></div>
+      </div>
+
+      <div class="section">
+        <h3>Steps</h3>
+        <div class="stepRow">
+          <input id="stepInput" type="text" placeholder="Add a step and tap +" class="input" style="height:auto;">
+          <button class="btn primary" type="button" id="addStepBtn">＋</button>
+        </div>
+        <ol id="stepsList" class="stepsList"></ol>
+      </div>
+
+      <div class="section">
+        <h3>Keywords</h3>
+        <div id="chipsKeywords" class="chips" aria-label="Keywords chip input"></div>
+        <div class="subtle">Examples: vegetarian, quick, Italian</div>
+      </div>
+
+      <div class="section">
+        <h3>Calendar dates</h3>
+        <div class="row-inline" style="gap:8px;">
+          <input id="datePicker" type="date" class="input" style="max-width: 220px;">
+          <button class="btn ghost" type="button" id="addDateBtn">Add date</button>
+        </div>
+        <div id="chipsDates" class="chips" aria-label="Dates chip input" style="margin-top:8px;"></div>
+        <div class="subtle">Add multiple dates (e.g., meal plan days). Tap × to remove.</div>
+      </div>
+
+      <div class="spacer"></div>
+      <div style="display:flex;gap:10px;justify-content:flex-end">
+        <button class="btn ghost" type="button" id="cancelForm">Cancel</button>
+        <button class="btn primary" type="submit" id="saveBtn">Save Recipe</button>
+      </div>
+    </form>
+  </main>
+
+  <!-- Calendar view -->
+  <main id="calendarView" class="view">
+    <div class="panel">
+      <div class="calHeader">
+        <div class="calNav">
+          <button class="btn ghost" id="prevMonth">◀</button>
+          <button class="btn ghost" id="todayBtn">Today</button>
+          <button class="btn ghost" id="nextMonth">▶</button>
+        </div>
+        <div class="calTitle" id="calTitle"></div>
+        <div class="nowline" id="nowLine">—</div>
+      </div>
+      <div class="dow">
+        <div>Sun</div><div>Mon</div><div>Tue</div><div>Wed</div><div>Thu</div><div>Fri</div><div>Sat</div>
+      </div>
+      <div class="grid" id="calGrid"></div>
+    </div>
+  </main>
+
+  <!-- Folders view -->
+  <main id="foldersView" class="view">
+    <div class="panel">
+      <div style="display:flex; align-items:center; gap:8px;">
+        <h2 style="margin:6px 0 10px 0; font-size:18px;">Folders</h2>
+        <button class="btn primary" id="newFolderBtn" style="margin-left:auto;">New Folder</button>
+      </div>
+      <ul id="foldersGrid" class="folderGrid"></ul>
+      <div id="foldersEmpty" class="empty" style="display:none;">No folders yet. Tap <b>New Folder</b> to create one.</div>
+    </div>
+  </main>
+
+  <!-- Folder detail view -->
+  <main id="folderDetailView" class="view">
+    <div class="panel">
+      <div style="display:flex; align-items:center; gap:8px;">
+        <h2 id="folderTitle" style="margin:6px 0 10px 0; font-size:18px;">Folder</h2>
+        <button class="btn ghost" id="renameFolderBtn" style="margin-left:auto;">Rename</button>
+        <button class="btn danger" id="deleteFolderBtn">Delete</button>
+      </div>
+      <div style="display:flex; gap:8px; margin-bottom:8px;">
+        <button class="btn primary" id="editFolderRecipesBtn">Add/Remove Recipes</button>
+      </div>
+      <ul id="folderRecipeList" class="list"></ul>
+      <div id="folderEmpty" class="empty" style="display:none;">No recipes in this folder yet.</div>
+    </div>
+  </main>
+
+  <!-- Tab Bar -->
+  <nav class="tabbar" role="tablist" aria-label="Primary">
+    <button id="tabRecipes" class="active" role="tab" aria-selected="true">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h10" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+      Recipes
+    </button>
+    <button id="tabCalendar" role="tab" aria-selected="false">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" aria-hidden="true"><rect x="3" y="4" width="18" height="18" rx="2" stroke="currentColor" stroke-width="2"/><path d="M16 2v4M8 2v4M3 10h18" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+      Calendar
+    </button>
+    <button id="tabFolders" role="tab" aria-selected="false">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+        <path d="M3 7a2 2 0 012-2h4l2 2h8a2 2 0 012 2v7a2 2 0 01-2 2H5a2 2 0 01-2-2V7z" stroke="currentColor" stroke-width="2" fill="none"/>
+      </svg>
+      Folders
+    </button>
+  </nav>
+
+  <button class="fab" id="addBtn" aria-label="Add recipe">＋</button>
+
+  <!-- Settings sheet -->
+  <section id="settings" class="sheet" role="dialog" aria-modal="true" aria-labelledby="settingsTitle" aria-hidden="true">
+    <div class="grab" aria-hidden="true"></div>
+    <h2 id="settingsTitle" style="margin:0 0 6px 0;">Settings</h2>
+    <div class="panel">
+      <h3>Appearance</h3>
+      <div class="row-inline">
+        <button class="btn ghost" id="themeLight">Light</button>
+        <button class="btn ghost" id="themeDark">Dark</button>
+        <button class="btn ghost" id="themeSystem">Use System</button>
+      </div>
+      <div class="subtle">Your choice is saved on this device.</div>
+    </div>
+    <div class="panel">
+      <h3>Danger zone</h3>
+      <button class="btn danger" id="clearAll">Clear all recipes</button>
+      <div class="subtle" style="margin-top:6px;">This wipes recipes, photos, and folders from this device.</div>
+    </div>
+    <div class="spacer"></div>
+    <button class="btn ghost" id="closeSettings" style="width:100%;">Close</button>
+  </section>
+
+  <!-- Day Sheet (tap a calendar day) -->
+  <section id="daySheet" class="sheet" role="dialog" aria-modal="true" aria-labelledby="daySheetTitle" aria-hidden="true">
+    <div class="grab" aria-hidden="true"></div>
+    <h2 id="daySheetTitle" style="margin:0 0 6px 0;">Day</h2>
+    <div class="panel">
+      <ul id="dayList" class="dayList"></ul>
+    </div>
+    <div class="spacer"></div>
+    <button class="btn ghost" id="closeDaySheet" style="width:100%;">Close</button>
+  </section>
+
+  <!-- Select Recipes sheet (for folders) -->
+  <section id="selectSheet" class="sheet" role="dialog" aria-modal="true" aria-labelledby="selectTitle" aria-hidden="true">
+    <div class="grab" aria-hidden="true"></div>
+    <h2 id="selectTitle" style="margin:0 0 6px 0;">Select Recipes</h2>
+    <div class="panel">
+      <ul id="selectList" class="selectList"></ul>
+    </div>
+    <div class="spacer"></div>
+    <div style="display:flex; gap:10px;">
+      <button class="btn ghost" id="cancelSelect" style="flex:1;">Cancel</button>
+      <button class="btn primary" id="saveSelect" style="flex:2;">Save Selection</button>
+    </div>
+  </section>
+
+  <!-- Folder Create/Rename sheet (fix for New Folder button) -->
+  <section id="folderSheet" class="sheet" role="dialog" aria-modal="true" aria-labelledby="folderSheetTitle" aria-hidden="true">
+    <div class="grab" aria-hidden="true"></div>
+    <h2 id="folderSheetTitle" style="margin:0 0 6px 0;">New Folder</h2>
+    <div class="panel">
+      <label for="folderNameInput" class="subtle">Name</label>
+      <input id="folderNameInput" type="text" class="input" placeholder="e.g., Weeknight Dinners">
+    </div>
+    <div class="spacer"></div>
+    <div style="display:flex; gap:10px;">
+      <button class="btn ghost" id="folderCancel" style="flex:1;">Cancel</button>
+      <button class="btn primary" id="folderSave" style="flex:2;">Save</button>
+    </div>
+  </section>
+
+  <!-- Modal confirmation -->
+  <div id="modal" class="modal-backdrop" aria-hidden="true">
+    <div class="dialog" role="dialog" aria-modal="true" aria-labelledby="dialogTitle">
+      <h3 id="dialogTitle">Confirm</h3>
+      <p id="dialogMsg"></p>
+      <div class="rowbtns">
+        <button class="btn ghost" id="dlgCancel">Cancel</button>
+        <button class="btn danger" id="dlgOK">Yes</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // --- THEME ---
+    const THEME_KEY = 'pocketCookbook.theme';
+    function applyTheme(t){
+      document.documentElement.setAttribute('data-theme', t);
+      localStorage.setItem(THEME_KEY, t);
+    }
+    (function initTheme(){
+      const saved = localStorage.getItem(THEME_KEY) || 'system';
+      applyTheme(saved);
+    })();
+
+    // --- Storage Keys ---
+    const STORAGE_KEY = 'pocketCookbook.recipes.v4';
+    const FOLDERS_KEY = 'pocketCookbook.folders.v1';
+    let db = null;
+
+    function loadRecipes(){
+      try{ const raw = localStorage.getItem(STORAGE_KEY); return raw ? JSON.parse(raw) : []; }
+      catch(e){ console.warn('Failed to load recipes', e); return []; }
+    }
+    function saveRecipes(list){ localStorage.setItem(STORAGE_KEY, JSON.stringify(list)); }
+
+    function loadFolders(){
+      try{ const raw = localStorage.getItem(FOLDERS_KEY); return raw ? JSON.parse(raw) : []; }
+      catch(e){ console.warn('Failed to load folders', e); return []; }
+    }
+    function saveFolders(list){ localStorage.setItem(FOLDERS_KEY, JSON.stringify(list)); }
+
+    // IndexedDB minimal wrapper
+    function openDB(){
+      return new Promise((resolve, reject) => {
+        const req = indexedDB.open('cookbookDB', 1);
+        req.onupgradeneeded = (e) => {
+          const dbc = e.target.result;
+          if (!dbc.objectStoreNames.contains('images')){
+            dbc.createObjectStore('images', { keyPath: 'id' });
+          }
+        };
+        req.onsuccess = () => resolve(req.result);
+        req.onerror = () => reject(req.error);
+      });
+    }
+    function idbPutImage(id, blob){
+      return new Promise((resolve, reject) => {
+        const tx = db.transaction('images', 'readwrite');
+        tx.oncomplete = () => resolve();
+        tx.onerror = () => reject(tx.error);
+        tx.objectStore('images').put({ id, blob });
+      });
+    }
+    function idbGetImage(id){
+      return new Promise((resolve, reject) => {
+        const tx = db.transaction('images', 'readonly');
+        tx.onerror = () => reject(tx.error);
+        const req = tx.objectStore('images').get(id);
+        req.onsuccess = () => resolve(req.result ? req.result.blob : null);
+        req.onerror = () => reject(req.error);
+      });
+    }
+    function idbDeleteImage(id){
+      return new Promise((resolve, reject) => {
+        const tx = db.transaction('images', 'readwrite');
+        tx.oncomplete = () => resolve();
+        tx.onerror = () => reject(tx.error);
+        tx.objectStore('images').delete(id);
+      });
+    }
+    function idbClearAll(){
+      return new Promise((resolve, reject) => {
+        const tx = db.transaction('images', 'readwrite');
+        tx.oncomplete = () => resolve();
+        tx.onerror = () => reject(tx.error);
+        tx.objectStore('images').clear();
+      });
+    }
+
+    // Image helpers
+    function dataURLtoBlob(dataUrl){
+      const arr = dataUrl.split(',');
+      const mime = arr[0].match(/:(.*?);/)[1];
+      const bstr = atob(arr[1]); let n = bstr.length; const u8 = new Uint8Array(n);
+      while(n--){ u8[n] = bstr.charCodeAt(n); }
+      return new Blob([u8], {type: mime});
+    }
+    function resizeImageFileToBlob(file, maxDim = 1200, quality = 0.8){
+      return new Promise((resolve, reject) => {
+        const fr = new FileReader();
+        fr.onload = () => {
+          const img = new Image();
+          img.onload = () => {
+            const canvas = document.createElement('canvas');
+            let w = img.width, h = img.height;
+            if (w > h && w > maxDim){ h = Math.round(h * (maxDim / w)); w = maxDim; }
+            else if (h > maxDim){ w = Math.round(w * (maxDim / h)); h = maxDim; }
+            canvas.width = w; canvas.height = h;
+            const ctx = canvas.getContext('2d');
+            ctx.drawImage(img, 0, 0, w, h);
+            if (canvas.toBlob){
+              canvas.toBlob(b => resolve(b || file), 'image/jpeg', quality);
+            } else {
+              try{
+                const dataUrl = canvas.toDataURL('image/jpeg', quality);
+                resolve(dataURLtoBlob(dataUrl));
+              }catch(e){ resolve(file); }
+            }
+          };
+          img.onerror = () => resolve(file);
+          img.src = fr.result;
+        };
+        fr.onerror = reject;
+        fr.readAsDataURL(file);
+      });
+    }
+
+    // Helpers
+    const $ = sel => document.querySelector(sel);
+    const $$ = sel => Array.from(document.querySelectorAll(sel));
+    const uid = () => Math.random().toString(36).slice(2) + Date.now().toString(36);
+    function escapeHTML(s){ return (s||'').replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[m])); }
+    function pad(n){ return n < 10 ? '0'+n : ''+n; }
+    function toISODate(d){ return d.getFullYear()+'-'+pad(d.getMonth()+1)+'-'+pad(d.getDate()); }
+    function makePlaceholder(text='Recipe'){
+      const svg = encodeURIComponent(`<svg xmlns='http://www.w3.org/2000/svg' width='800' height='500'>
+        <defs><linearGradient id='g' x1='0' y1='0' x2='1' y2='1'><stop offset='0%' stop-color='#86b7ff'/><stop offset='100%' stop-color='#b2f5ea'/></linearGradient></defs>
+        <rect width='100%' height='100%' fill='url(#g)'/>
+        <text x='50%' y='52%' dominant-baseline='middle' text-anchor='middle' font-size='72' font-family='-apple-system,BlinkMacSystemFont,Segoe UI,Roboto,Arial' fill='white' opacity='0.95'>${text}</text>
+      </svg>`);
+      return `data:image/svg+xml;charset=utf-8,${svg}`;
+    }
+
+    // Custom confirm modal
+    function confirmDialog(message, okText='Yes', danger=true){
+      return new Promise(resolve => {
+        const modal = $('#modal');
+        $('#dialogMsg').textContent = message;
+        const okBtn = $('#dlgOK'); const cancelBtn = $('#dlgCancel');
+        okBtn.textContent = okText; okBtn.classList.toggle('danger', !!danger);
+        function cleanup(ans){ modal.classList.remove('open'); modal.setAttribute('aria-hidden','true'); okBtn.removeEventListener('click', onOK); cancelBtn.removeEventListener('click', onCancel); modal.removeEventListener('click', onBackdrop); resolve(ans); }
+        function onOK(){ cleanup(true); } function onCancel(){ cleanup(false); } function onBackdrop(e){ if(e.target === modal) cleanup(false); }
+        okBtn.addEventListener('click', onOK); cancelBtn.addEventListener('click', onCancel); modal.addEventListener('click', onBackdrop);
+        modal.classList.add('open'); modal.setAttribute('aria-hidden','false');
+      });
+    }
+
+    // Object URL cache to avoid leaks
+    const urlCache = new Map(); // imageId -> objectURL
+    async function setImgSrcFromImageId(imgEl, imageId, placeholder){
+      if (!imageId){ imgEl.src = placeholder; return; }
+      try{
+        const blob = await idbGetImage(imageId);
+        if (!blob){ imgEl.src = placeholder; return; }
+        if (urlCache.has(imageId)){ URL.revokeObjectURL(urlCache.get(imageId)); }
+        const url = URL.createObjectURL(blob);
+        urlCache.set(imageId, url);
+        imgEl.src = url;
+      }catch{ imgEl.src = placeholder; }
+    }
+
+    // Chip input component
+    function createChips(root){
+      const values = [];
+      const input = document.createElement('input');
+      input.setAttribute('type','text');
+      input.setAttribute('placeholder','Type and hit Return');
+      root.appendChild(input);
+
+      function render(){
+        [...root.querySelectorAll('.chip')].forEach(n => n.remove());
+        for (const v of values){
+          const chip = document.createElement('span');
+          chip.className = 'chip';
+          chip.innerHTML = `${escapeHTML(v)} <button title="Remove" aria-label="Remove">×</button>`;
+          chip.querySelector('button').onclick = () => {
+            const idx = values.indexOf(v);
+            if (idx >= 0){ values.splice(idx,1); render(); }
+          };
+          root.insertBefore(chip, input);
+        }
+      }
+      function addFromInput(){
+        const t = input.value.trim();
+        if (!t) return;
+        values.push(t);
+        input.value='';
+        render();
+      }
+      input.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter' || e.key === ','){ e.preventDefault(); addFromInput(); }
+        else if (e.key === 'Backspace' && !input.value && values.length){
+          values.pop(); render();
+        }
+      });
+      input.addEventListener('blur', addFromInput);
+
+      return {
+        set(list){ values.splice(0, values.length, ...(list||[])); render(); },
+        get(){ return values.slice(); },
+        focus(){ input.focus(); },
+        add(s){ if (s){ values.push(s); render(); } },
+        remove(val){ const i = values.indexOf(val); if (i>=0){ values.splice(i,1); render(); } }
+      };
+    }
+
+    // Steps builder
+    function createSteps(listEl, inputEl){
+      const steps = [];
+      function render(){
+        listEl.innerHTML = '';
+        steps.forEach((txt, i) => {
+          const li = document.createElement('li');
+          const span = document.createElement('div');
+          span.className = 'stepText'; span.textContent = txt;
+          const edit = document.createElement('button');
+          edit.className = 'smIcon'; edit.title='Edit'; edit.innerHTML = '✎';
+          const del = document.createElement('button');
+          del.className = 'smIcon'; del.title='Delete'; del.innerHTML = '🗑';
+          edit.onclick = async () => {
+            const nv = prompt('Edit step', txt);
+            if (nv !== null){ steps[i] = nv.trim(); render(); }
+          };
+          del.onclick = () => { steps.splice(i,1); render(); };
+          li.appendChild(span); li.appendChild(edit); li.appendChild(del);
+          listEl.appendChild(li);
+        });
+      }
+      function add(s){
+        const t = (s ?? inputEl.value).trim();
+        if (!t) return;
+        steps.push(t); inputEl.value=''; render();
+      }
+      return { set(list){ steps.splice(0, steps.length, ...(list||[])); render(); },
+               get(){ return steps.slice(); },
+               add };
+    }
+
+    // Dates chips specialized
+    function createDateChips(root){
+      const chips = createChips(root);
+      return {
+        set(list){ chips.set((list||[])); },
+        get(){ return chips.get(); },
+        addFromPicker(input){
+          const val = input.value;
+          if (!val) return;
+          const arr = chips.get();
+          if (!arr.includes(val)){ arr.push(val); chips.set(arr); }
+          input.value = '';
+        },
+        remove(val){ chips.remove(val); }
+      };
+    }
+
+    // --- State & Views ---
+    let recipes = [];
+    let folders = [];
+    let currentId = null;
+    let currentFolderId = null;
+    let formMode = 'add';
+    let searchQuery = '';
+
+    const listView = $('#listView');
+    const detailView = $('#detailView');
+    const formView = $('#formView');
+    const calendarView = $('#calendarView');
+    const foldersView = $('#foldersView');
+    const folderDetailView = $('#folderDetailView');
+    const backBtn = $('#backBtn');
+    const settings = $('#settings');
+    const addBtn = $('#addBtn');
+    const searchWrap = $('#searchWrap');
+    const searchInput = $('#searchInput');
+    const resultCount = $('#resultCount');
+    const appTitle = $('#appTitle');
+
+    // Day sheet refs
+    const daySheet = $('#daySheet');
+    const daySheetTitle = $('#daySheetTitle');
+    const dayList = $('#dayList');
+    $('#closeDaySheet').addEventListener('click', () => openDaySheet(null));
+
+    // Folder selection sheet
+    const selectSheet = $('#selectSheet');
+    const selectList = $('#selectList');
+    const saveSelect = $('#saveSelect');
+    const cancelSelect = $('#cancelSelect');
+
+    // Folder create/rename sheet
+    const folderSheet = $('#folderSheet');
+    const folderSheetTitle = $('#folderSheetTitle');
+    const folderNameInput = $('#folderNameInput');
+    const folderCancel = $('#folderCancel');
+    const folderSave = $('#folderSave');
+    let folderSheetMode = 'create'; // or 'rename'
+    let folderSheetTargetId = null;
+
+    // Chip instances
+    const chipsIngredients = createChips($('#chipsIngredients'));
+    const chipsCookware = createChips($('#chipsCookware'));
+    const chipsKeywords = createChips($('#chipsKeywords'));
+    const stepsBuilder = createSteps($('#stepsList'), $('#stepInput'));
+    $('#addStepBtn').addEventListener('click', () => stepsBuilder.add());
+
+    // Date chips
+    const dateChips = createDateChips($('#chipsDates'));
+    $('#addDateBtn').addEventListener('click', () => dateChips.addFromPicker($('#datePicker')));
+
+    // Theme buttons
+    $('#themeLight').addEventListener('click', () => applyTheme('light'));
+    $('#themeDark').addEventListener('click', () => applyTheme('dark'));
+    $('#themeSystem').addEventListener('click', () => applyTheme('system'));
+
+    // Tabs
+    const tabRecipes = $('#tabRecipes');
+    const tabCalendar = $('#tabCalendar');
+    const tabFolders = $('#tabFolders');
+    tabRecipes.addEventListener('click', () => enterTab('recipes'));
+    tabCalendar.addEventListener('click', () => enterTab('calendar'));
+    tabFolders.addEventListener('click', () => enterTab('folders'));
+
+    function enterTab(which){
+      tabRecipes.classList.toggle('active', which==='recipes');
+      tabRecipes.setAttribute('aria-selected', which==='recipes' ? 'true' : 'false');
+      tabCalendar.classList.toggle('active', which==='calendar');
+      tabCalendar.setAttribute('aria-selected', which==='calendar' ? 'true' : 'false');
+      tabFolders.classList.toggle('active', which==='folders');
+      tabFolders.setAttribute('aria-selected', which==='folders' ? 'true' : 'false');
+
+      if (which==='recipes'){
+        appTitle.textContent = 'Olivia’s Pocket Cookbook';
+        show(listView);
+        addBtn.classList.remove('hidden');
+      } else if (which==='calendar'){
+        appTitle.textContent = 'Calendar';
+        show(calendarView);
+        addBtn.classList.add('hidden');
+        renderCalendar();
+      } else {
+        appTitle.textContent = 'Folders';
+        show(foldersView);
+        addBtn.classList.add('hidden');
+        renderFolders();
+      }
+    }
+
+    function show(view){
+      for (const v of [listView, detailView, formView, calendarView, foldersView, folderDetailView]) v.classList.remove('active');
+      view.classList.add('active');
+      const onList = (view === listView);
+      backBtn.style.visibility = (view !== listView && view !== calendarView && view !== foldersView) ? 'visible' : 'hidden';
+      searchWrap.style.display = onList ? 'flex' : 'none';
+      $$('.row').forEach(r => r.classList.remove('show-delete'));
+      window.scrollTo({top:0, behavior:'instant'});
+    }
+
+    // --- Recipes List ---
+    function renderList(){
+      const filtered = getFilteredRecipes();
+      resultCount.textContent = filtered.length ? `${filtered.length}` : '';
+      if (!filtered.length){
+        $('#listContainer').innerHTML = `<div class="empty">
+          <p>No recipes found.</p>
+          <p class="subtle">Try another search or add a recipe.</p>
+        </div>`;
+        return;
+      }
+      const html = [`<ul class="list" id="recipeList">`];
+      for (const r of filtered){
+        const ingCount = (r.ingredients && r.ingredients.length) ? r.ingredients.length : 0;
+        const stepCount = (r.steps && r.steps.length) ? r.steps.length : 0;
+        const tags = (r.keywords || []).map(k => `<span class="tag">${escapeHTML(k)}</span>`).join('');
+        html.push(`
+          <li class="row" data-id="${r.id}" tabindex="0" aria-label="${escapeHTML(r.name)}">
+            <button class="delete-btn" aria-label="Delete ${escapeHTML(r.name)}">Delete</button>
+            <div class="content">
+              <img class="thumb" data-image-id="${r.imageId || ''}" alt="" src="${makePlaceholder('Recipe')}" />
+              <div>
+                <div class="name">${escapeHTML(r.name)}</div>
+                <div class="meta">${ingCount} ingred • ${stepCount} steps</div>
+                <div class="tags">${tags}</div>
+              </div>
+            </div>
+          </li>
+        `);
+      }
+      html.push(`</ul>`);
+      $('#listContainer').innerHTML = html.join('');
+      bindListEvents();
+      hydrateListImages();
+    }
+
+    function hydrateListImages(){
+      $$('#recipeList img.thumb').forEach(img => {
+        const imageId = img.getAttribute('data-image-id');
+        const placeholder = img.getAttribute('src');
+        setImgSrcFromImageId(img, imageId, placeholder);
+      });
+    }
+
+    function bindListEvents(){
+      const rows = $$('#recipeList .row');
+      rows.forEach(row => {
+        const id = row.getAttribute('data-id');
+        const content = row.querySelector('.content');
+        const del = row.querySelector('.delete-btn');
+
+        row.addEventListener('click', () => {
+          if (row.classList.contains('show-delete')) return;
+          openDetail(id);
+        });
+
+        del.addEventListener('click', async (e) => {
+          e.stopPropagation();
+          const r = recipes.find(r => r.id === id);
+          if (!r) return;
+          const ok = await confirmDialog(`Delete “${r.name}”?`, 'Delete');
+          if (ok){
+            if (r.imageId){ try{ await idbDeleteImage(r.imageId); }catch{} }
+            recipes = recipes.filter(r => r.id !== id);
+            saveRecipes(recipes);
+            // prune from folders
+            folders.forEach(f => f.recipeIds = (f.recipeIds || []).filter(x => x !== id));
+            saveFolders(folders);
+            renderList();
+          } else {
+            row.classList.remove('show-delete');
+          }
+        });
+
+        // Swipe gestures
+        let startX = 0;
+        let swiping = false;
+        row.addEventListener('touchstart', (e) => { startX = e.touches[0].clientX; swiping = true; }, {passive:true});
+        row.addEventListener('touchmove', (e) => {
+          if (!swiping) return;
+          const currentX = e.touches[0].clientX;
+          const dx = Math.min(0, currentX - startX); // negative = left
+          const translate = Math.max(-92, dx);
+          content.style.transform = `translateX(${translate}px)`;
+        }, {passive:true});
+        row.addEventListener('touchend', () => {
+          if (!swiping) return;
+          swiping = false;
+          const style = getComputedStyle(content);
+          const transform = style.transform;
+          let moved = 0;
+          if (transform && transform !== 'none'){
+            const m = new WebKitCSSMatrix(transform);
+            moved = m.m41;
+          }
+          if (moved < -60) row.classList.add('show-delete');
+          else row.classList.remove('show-delete');
+          content.style.transform = '';
+        }, {passive:true});
+      });
+    }
+
+    async function openDetail(id){
+      const r = recipes.find(x => x.id === id);
+      if (!r) return;
+      currentId = id;
+      $('#detailName').textContent = r.name || 'Untitled';
+      const ingCount = (r.ingredients && r.ingredients.length) ? r.ingredients.length : 0;
+      const stepCount = (r.steps && r.steps.length) ? r.steps.length : 0;
+      $('#detailMeta').textContent = `${ingCount} ingredients • ${stepCount} steps`;
+
+      const pills = list => (list && list.length)
+        ? list.map(i => `<span class="pill">${escapeHTML(i)}</span>`).join('')
+        : '<div class="subtle">None</div>';
+      $('#detailIngredients').innerHTML = pills(r.ingredients);
+      $('#detailCookware').innerHTML = pills(r.cookware);
+
+      const steps = r.steps && r.steps.length ? r.steps.map(s => `<li>${escapeHTML(s)}</li>`).join('') : '';
+      $('#detailSteps').innerHTML = steps || '<div class="subtle">No steps</div>';
+
+      const kw = (r.keywords || []).map(k => `<span class="tag">${escapeHTML(k)}</span>`).join('');
+      $('#detailKeywords').innerHTML = kw || '<div class="subtle">None</div>';
+
+      const dates = (r.dateEntries || []).slice().sort().map(d => `<span class="tag">${escapeHTML(d)}</span>`).join('');
+      $('#detailDates').innerHTML = dates || '<div class="subtle">None</div>';
+
+      const imgEl = $('#detailImage');
+      imgEl.src = makePlaceholder('Recipe');
+      await setImgSrcFromImageId(imgEl, r.imageId || '', imgEl.src);
+
+      show(detailView);
+    }
+
+    // Add date from detail
+    $('#detailAddDate').addEventListener('click', () => {
+      const inp = $('#detailDateInput');
+      const val = inp.value;
+      if (!currentId || !val) return;
+      const r = recipes.find(x => x.id === currentId);
+      if (!r) return;
+      r.dateEntries = r.dateEntries || [];
+      if (!r.dateEntries.includes(val)) r.dateEntries.push(val);
+      saveRecipes(recipes);
+      inp.value = '';
+      openDetail(currentId);
+    });
+
+    // --- Search ---
+    searchInput.addEventListener('input', () => {
+      searchQuery = searchInput.value.trim().toLowerCase();
+      renderList();
+    });
+    function getFilteredRecipes(){
+      if (!searchQuery) return recipes.slice();
+      return recipes.filter(r => {
+        const bucket = [
+          r.name || '',
+          ...(r.ingredients || []),
+          ...(r.cookware || []),
+          ...(r.steps || []),
+          ...(r.keywords || [])
+        ].join(' ').toLowerCase();
+        return bucket.includes(searchQuery);
+      });
+    }
+
+    // --- Form flow (Add/Edit) ---
+    $('#cancelForm').addEventListener('click', () => show(listView));
+    $('#editBtn').addEventListener('click', () => enterEditMode(currentId));
+    addBtn.addEventListener('click', () => enterAddMode());
+    backBtn.addEventListener('click', () => show(listView));
+
+    function enterAddMode(){
+      formMode = 'add';
+      $('#formTitle').textContent = 'Add Recipe';
+      $('#saveBtn').textContent = 'Save Recipe';
+      $('#editingId').value = '';
+      $('#recipeForm').reset();
+      $('#removeImage').checked = false;
+      $('#imagePreview').src = makePlaceholder('Recipe');
+      chipsIngredients.set([]); chipsCookware.set([]); chipsKeywords.set([]);
+      stepsBuilder.set([]);
+      dateChips.set([]);
+      show(formView);
+    }
+
+    async function enterEditMode(id){
+      const r = recipes.find(x => x.id === id);
+      if (!r) return;
+      formMode = 'edit';
+      $('#formTitle').textContent = 'Edit Recipe';
+      $('#saveBtn').textContent = 'Save Changes';
+      $('#editingId').value = r.id;
+      $('#name').value = r.name || '';
+      chipsIngredients.set(r.ingredients || []);
+      chipsCookware.set(r.cookware || []);
+      chipsKeywords.set(r.keywords || []);
+      stepsBuilder.set(r.steps || []);
+      dateChips.set(r.dateEntries || []);
+      $('#removeImage').checked = false;
+      const prev = $('#imagePreview');
+      prev.src = makePlaceholder('Recipe');
+      await setImgSrcFromImageId(prev, r.imageId, prev.src);
+      show(formView);
+    }
+
+    $('#recipeForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const saveBtn = $('#saveBtn');
+      const name = $('#name').value.trim();
+      if (!name){ await confirmDialog('Please enter a name.', 'OK', false); return; }
+
+      saveBtn.disabled = true;
+      const prevLabel = saveBtn.textContent;
+      saveBtn.textContent = 'Saving…';
+
+      try {
+        const fileInput = $('#image');
+        const removeImage = $('#removeImage').checked;
+        let newImageBlob = null;
+        if (fileInput && fileInput.files && fileInput.files[0]){
+          newImageBlob = await resizeImageFileToBlob(fileInput.files[0], 1200, 0.8);
+        }
+
+        if (formMode === 'add'){
+          const recipe = {
+            id: uid(),
+            name,
+            imageId: null,
+            ingredients: chipsIngredients.get(),
+            cookware: chipsCookware.get(),
+            steps: stepsBuilder.get(),
+            keywords: chipsKeywords.get(),
+            dateEntries: dateChips.get(),
+            createdAt: Date.now()
+          };
+          if (newImageBlob){
+            const imgId = uid();
+            await idbPutImage(imgId, newImageBlob);
+            recipe.imageId = imgId;
+          }
+          recipes.unshift(recipe);
+          saveRecipes(recipes);
+          e.target.reset();
+          renderList();
+          show(listView);
+        } else {
+          const id = $('#editingId').value;
+          const r = recipes.find(x => x.id === id);
+          if (!r) throw new Error('Recipe not found.');
+          r.name = name;
+          r.ingredients = chipsIngredients.get();
+          r.cookware = chipsCookware.get();
+          r.steps = stepsBuilder.get();
+          r.keywords = chipsKeywords.get();
+          r.dateEntries = dateChips.get();
+
+          if (removeImage && r.imageId){ try{ await idbDeleteImage(r.imageId); }catch{} r.imageId = null; }
+          if (newImageBlob){
+            if (r.imageId){ try{ await idbDeleteImage(r.imageId); }catch{} }
+            const newId = uid();
+            await idbPutImage(newId, newImageBlob);
+            r.imageId = newId;
+          }
+          saveRecipes(recipes);
+          renderList();
+          await openDetail(r.id);
+          show(detailView);
+        }
+      } catch (err){
+        await confirmDialog(err && err.message ? err.message : 'Could not save your recipe. Try a smaller photo or remove the image.', 'OK', false);
+      } finally {
+        saveBtn.disabled = false;
+        saveBtn.textContent = prevLabel;
+      }
+    });
+
+    // --- Settings ---
+    $('#settingsBtn').addEventListener('click', () => openSettings(true));
+    $('#closeSettings').addEventListener('click', () => openSettings(false));
+    function openSettings(open){
+      settings.classList.toggle('open', !!open);
+      settings.setAttribute('aria-hidden', open ? 'false' : 'true');
+    }
+    $('#clearAll').addEventListener('click', async () => {
+      const ok = await confirmDialog('Clear all recipes and folders? This cannot be undone.', 'Clear all');
+      if (ok){
+        localStorage.removeItem(STORAGE_KEY);
+        localStorage.removeItem(FOLDERS_KEY);
+        recipes = [];
+        folders = [];
+        try{ await idbClearAll(); }catch{}
+        renderList();
+        enterTab('recipes');
+        openSettings(false);
+      }
+    });
+
+    // --- Calendar ---
+    let calYear, calMonth;
+    const calTitle = $('#calTitle');
+    const calGrid = $('#calGrid');
+    const nowLine = $('#nowLine');
+    $('#prevMonth').addEventListener('click', () => { shiftMonth(-1); });
+    $('#nextMonth').addEventListener('click', () => { shiftMonth(1); });
+    $('#todayBtn').addEventListener('click', () => { const d = new Date(); calYear=d.getFullYear(); calMonth=d.getMonth(); renderCalendar(); });
+
+    function shiftMonth(delta){
+      calMonth += delta;
+      if (calMonth < 0){ calMonth = 11; calYear -= 1; }
+      else if (calMonth > 11){ calMonth = 0; calYear += 1; }
+      renderCalendar();
+    }
+
+    function buildDateIndex(){
+      const map = new Map();
+      for (const r of recipes){
+        const dates = (r.dateEntries || []);
+        for (const d of dates){
+          if (!map.has(d)) map.set(d, []);
+          map.get(d).push({id:r.id, name:r.name});
+        }
+      }
+      return map;
+    }
+
+    function renderCalendar(){
+      const today = new Date();
+      if (calYear == null || calMonth == null){
+        calYear = today.getFullYear(); calMonth = today.getMonth();
+      }
+      const fmtMonth = new Intl.DateTimeFormat(undefined, {month:'long', year:'numeric'});
+      calTitle.textContent = fmtMonth.format(new Date(calYear, calMonth, 1));
+
+      const dateIndex = buildDateIndex();
+      calGrid.innerHTML = '';
+
+      const first = new Date(calYear, calMonth, 1);
+      const startDay = first.getDay();
+      const daysInMonth = new Date(calYear, calMonth+1, 0).getDate();
+      const cells = [];
+
+      for (let i=0;i<startDay;i++) cells.push({empty:true});
+      for (let d=1; d<=daysInMonth; d++){
+        const iso = calYear+'-'+pad(calMonth+1)+'-'+pad(d);
+        const events = dateIndex.get(iso) || [];
+        cells.push({day:d, iso, events});
+      }
+
+      for (const c of cells){
+        const cell = document.createElement('div');
+        cell.className = 'cell';
+        if (c.empty){
+          cell.style.visibility = 'hidden';
+        }else{
+          cell.setAttribute('data-iso', c.iso);
+          const dn = document.createElement('div');
+          dn.className = 'daynum';
+          dn.textContent = c.day;
+          cell.appendChild(dn);
+
+          if (c.iso === toISODate(today)){
+            cell.classList.add('today');
+          }
+
+          const maxShow = 4;
+          c.events.slice(0,maxShow).forEach(ev => {
+            const a = document.createElement('button');
+            a.className = 'ev';
+            a.textContent = ev.name;
+            a.title = ev.name;
+            a.onclick = (e) => { e.stopPropagation(); openDetail(ev.id); };
+            cell.appendChild(a);
+          });
+          if (c.events.length > maxShow){
+            const more = document.createElement('div');
+            more.className = 'more';
+            more.textContent = `+${c.events.length - maxShow} more`;
+            cell.appendChild(more);
+          }
+
+          cell.addEventListener('click', () => openDaySheet(c.iso));
+        }
+        calGrid.appendChild(cell);
+      }
+      updateNowLine();
+    }
+
+    function openDaySheet(iso){
+      if (!iso){
+        daySheet.classList.remove('open');
+        daySheet.setAttribute('aria-hidden','true');
+        return;
+      }
+      const [y,m,d] = iso.split('-').map(n=>parseInt(n,10));
+      const dateObj = new Date(y, m-1, d);
+      const fmt = new Intl.DateTimeFormat(undefined, {weekday:'long', month:'long', day:'numeric', year:'numeric'});
+      daySheetTitle.textContent = fmt.format(dateObj);
+
+      const index = buildDateIndex();
+      const events = index.get(iso) || [];
+      if (!events.length){
+        dayList.innerHTML = `<li class="subtle" style="padding:10px 4px;">No recipes scheduled for this day.</li>`;
+      } else {
+        dayList.innerHTML = events.map(ev => `
+          <li class="dayItem">
+            <div>${escapeHTML(ev.name)}</div>
+            <button class="btn ghost" data-open-id="${ev.id}">Open</button>
+          </li>
+        `).join('');
+        dayList.querySelectorAll('button[data-open-id]').forEach(btn => {
+          btn.addEventListener('click', () => {
+            const id = btn.getAttribute('data-open-id');
+            openDaySheet(null);
+            openDetail(id);
+          });
+        });
+      }
+
+      daySheet.classList.add('open');
+      daySheet.setAttribute('aria-hidden','false');
+    }
+
+    function updateNowLine(){
+      const now = new Date();
+      const fmt = new Intl.DateTimeFormat(undefined, {weekday:'short', month:'short', day:'numeric', hour:'numeric', minute:'2-digit'});
+      const tz = Intl.DateTimeFormat().resolvedOptions().timeZone || '';
+      $('#nowLine').textContent = fmt.format(now) + (tz ? ' • '+tz : '');
+    }
+    setInterval(updateNowLine, 60000);
+
+    // --- Folders ---
+    function renderFolders(){
+      const grid = $('#foldersGrid');
+      const empty = $('#foldersEmpty');
+      grid.innerHTML = '';
+      if (!folders.length){
+        empty.style.display = 'block';
+        return;
+      }
+      empty.style.display = 'none';
+      for (const f of folders){
+        const count = (f.recipeIds||[]).length;
+        const li = document.createElement('li');
+        li.className = 'folderCard';
+        li.innerHTML = `
+          <h3>${escapeHTML(f.name || 'Untitled')}</h3>
+          <div class="folderMeta">${count} recipe${count===1?'':'s'}</div>
+          <div class="folderActions">
+            <button class="btn ghost" data-open="${f.id}">Open</button>
+            <button class="btn ghost" data-edit="${f.id}">Rename</button>
+          </div>
+        `;
+        grid.appendChild(li);
+
+        li.querySelector('[data-open]').addEventListener('click', () => openFolder(f.id));
+        li.querySelector('[data-edit]').addEventListener('click', () => openFolderSheet('rename', f.id));
+      }
+    }
+
+    function openFolder(id){
+      const f = folders.find(x => x.id === id);
+      if (!f) return;
+      currentFolderId = id;
+      $('#folderTitle').textContent = f.name || 'Untitled';
+      renderFolderRecipes(id);
+      show(folderDetailView);
+    }
+
+    function renderFolderRecipes(id){
+      const f = folders.find(x => x.id === id);
+      if (!f) return;
+      const ul = $('#folderRecipeList');
+      const empty = $('#folderEmpty');
+      ul.innerHTML = '';
+      const ids = new Set(f.recipeIds||[]);
+      const items = recipes.filter(r => ids.has(r.id));
+      if (!items.length){
+        empty.style.display = 'block';
+      }else{
+        empty.style.display = 'none';
+        for (const r of items){
+          const li = document.createElement('li');
+          li.className = 'row';
+          li.innerHTML = `
+            <div class="content">
+              <img class="thumb" data-image-id="${r.imageId || ''}" alt="" src="${makePlaceholder('Recipe')}" />
+              <div>
+                <div class="name">${escapeHTML(r.name)}</div>
+                <div class="meta">${(r.ingredients||[]).length} ingred • ${(r.steps||[]).length} steps</div>
+              </div>
+              <button class="btn ghost" data-remove="${r.id}" style="margin-left:auto;">Remove</button>
+            </div>`;
+          ul.appendChild(li);
+          const img = li.querySelector('img.thumb');
+          setImgSrcFromImageId(img, r.imageId || '', img.getAttribute('src'));
+          li.querySelector('[data-remove]').addEventListener('click', () => {
+            f.recipeIds = (f.recipeIds||[]).filter(x => x !== r.id);
+            saveFolders(folders);
+            renderFolderRecipes(id);
+          });
+          li.addEventListener('click', (e)=>{ if(!(e.target instanceof HTMLButtonElement)) openDetail(r.id); });
+        }
+      }
+      // bind header actions
+      $('#renameFolderBtn').onclick = () => openFolderSheet('rename', f.id);
+      $('#deleteFolderBtn').onclick = async () => {
+        const ok = await confirmDialog(`Delete folder “${f.name}”?`, 'Delete');
+        if (!ok) return;
+        folders = folders.filter(x => x.id !== id);
+        saveFolders(folders);
+        enterTab('folders');
+      };
+      $('#editFolderRecipesBtn').onclick = () => openSelectSheet(id);
+    }
+
+    // Folder sheet logic
+    function openFolderSheet(mode='create', id=null){
+      folderSheetMode = mode;
+      folderSheetTargetId = id;
+      if (mode === 'create'){
+        folderSheetTitle.textContent = 'New Folder';
+        folderNameInput.value = '';
+      } else {
+        const f = folders.find(x => x.id === id);
+        folderSheetTitle.textContent = 'Rename Folder';
+        folderNameInput.value = f ? (f.name || '') : '';
+      }
+      folderSheet.classList.add('open');
+      folderSheet.setAttribute('aria-hidden','false');
+      setTimeout(()=>folderNameInput.focus(), 50);
+    }
+    function closeFolderSheet(){
+      folderSheet.classList.remove('open');
+      folderSheet.setAttribute('aria-hidden','true');
+    }
+    $('#newFolderBtn').addEventListener('click', () => openFolderSheet('create'));
+    folderCancel.addEventListener('click', closeFolderSheet);
+    folderSave.addEventListener('click', () => {
+      const name = folderNameInput.value.trim() || 'Untitled';
+      if (folderSheetMode === 'create'){
+        const folder = { id: uid(), name, recipeIds: [] };
+        folders.unshift(folder);
+        saveFolders(folders);
+        renderFolders();
+      } else if (folderSheetMode === 'rename' && folderSheetTargetId){
+        const f = folders.find(x => x.id === folderSheetTargetId);
+        if (f){ f.name = name; saveFolders(folders); renderFolders(); if (currentFolderId === f.id) { $('#folderTitle').textContent = f.name; } }
+      }
+      closeFolderSheet();
+    });
+    folderNameInput.addEventListener('keydown', (e) => { if (e.key === 'Enter'){ e.preventDefault(); folderSave.click(); } });
+
+    // Select sheet (multi-select recipes for a folder)
+    function openSelectSheet(folderId){
+      const f = folders.find(x => x.id === folderId);
+      if (!f) return;
+      selectList.innerHTML = '';
+      const selected = new Set(f.recipeIds||[]);
+      for (const r of recipes){
+        const li = document.createElement('li');
+        li.className = 'selectRow';
+        li.innerHTML = `
+          <img class="thumb" data-image-id="${r.imageId || ''}" alt="" src="${makePlaceholder('Recipe')}" />
+          <label><input type="checkbox" value="${r.id}" ${selected.has(r.id)?'checked':''}/> <span>${escapeHTML(r.name)}</span></label>
+        `;
+        selectList.appendChild(li);
+        const img = li.querySelector('img.thumb');
+        setImgSrcFromImageId(img, r.imageId || '', img.getAttribute('src'));
+      }
+      saveSelect.onclick = () => {
+        const checks = selectList.querySelectorAll('input[type="checkbox"]');
+        const chosen = [];
+        checks.forEach(ch => { if (ch.checked) chosen.push(ch.value); });
+        f.recipeIds = chosen;
+        saveFolders(folders);
+        selectSheet.classList.remove('open');
+        selectSheet.setAttribute('aria-hidden','true');
+        renderFolderRecipes(folderId);
+        renderFolders();
+      };
+      cancelSelect.onclick = () => {
+        selectSheet.classList.remove('open');
+        selectSheet.setAttribute('aria-hidden','true');
+      };
+      selectSheet.classList.add('open');
+      selectSheet.setAttribute('aria-hidden','false');
+    }
+
+    // --- Init ---
+    (async function init(){
+      try{ db = await openDB(); }catch(e){ console.warn('DB failed', e); }
+      recipes = loadRecipes();
+      folders = loadFolders();
+
+      renderList();
+      updateNowLine();
+    })();
+  </script>
+</body>
+</html>
